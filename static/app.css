@@ -1,0 +1,252 @@
+body {
+    font-family: 'Roboto', Helvetica, sans-serif;
+    font-weight: 300;
+    margin: 0;
+    padding: 0;
+    background: white;
+}
+
+#footer {
+    color: gray;
+    text-align: center;
+    padding: 10px;
+    min-height: 200px;
+    margin-top: 30px;
+}
+
+#container {
+    min-height: 600px;
+}
+
+.avatar {
+    display: inline-block;
+    width: 300px;
+    height: 300px;
+    border: 2px solid #AAA;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 50% 50%;
+}
+
+.avatar-centered {
+    display: block;
+    margin: 10px auto;
+}
+
+.avatar-sm {
+    width: 35px;
+    height: 35px;
+    border: 2px solid white;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.userAvatar {
+}
+
+.userAvatar .handle {
+    display: block;
+    text-transform: uppercase;
+    text-align: right;
+    margin-top: 4px;
+}
+
+.userAvatar .location {
+    display: block;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.5);
+    font-size: 0.8em;
+    text-align: right;
+}
+
+.feedMessage {
+    padding: 10px;
+    border: 1px solid rgba(0,0,0,0.0);
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius: 3px;
+}
+
+.feedMessage a, .feedMessage a:hover, .feedMessage a:visited {
+    text-decoration: none;
+}
+
+.feedMessage h2, .feedMessage a > h2 {
+    color: gray;
+    transition: 1s all;
+    text-decoration: none;
+}
+
+.feedMessage a:hover > h2 {
+    color: #0689ff;
+    text-decoration: none;
+}
+
+
+.feed .feedMessage:hover {
+    border: 1px solid #EFEFEF;
+}
+
+.feedMessage .details, .transcription .details {
+    font-size: 0.75em;
+    color: rgba(0,0,0,0.7);
+}
+
+.feedMessage .details > span, .transcription .details > span {
+    margin-right: 8px;
+}
+
+.transcription {
+    background: white;
+    border: 1px solid #DDD;
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 4px;
+}
+
+.transcription .text {
+    font-family: monospace;
+}
+
+.map {
+    min-height: 250px;
+    margin: 10px 0;
+}
+
+
+.feed-cta {
+    z-index: 100;
+    position: fixed;
+    right: 0px;
+    bottom: 30px;
+    width: 300px;
+    background: white;
+    padding: 12px;
+    border-top: 1px solid #DDD;
+    border-left: 1px solid #DDD;
+    border-bottom: 1px solid #DDD;
+}
+
+/* Major Layout */
+
+#container {
+
+}
+
+header.topBar {
+    display: block;
+    text-shadow: none;
+    margin-top: 15px;
+}
+
+.vpad {
+    margin: 10px 0;
+}
+
+.app-content {
+    background: white;
+    margin: 20px 0px;
+    padding: 12px;
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius: 3px;
+}
+
+.siteHeader {
+    text-align: center;
+}
+
+.userSection {
+    text-align: right;
+}
+
+.siteHeader h1 {
+}
+
+.siteHeader .siteTitle {
+    text-align: center;
+    color: gray;
+    text-transform: uppercase;
+    font-size: 1.2em;
+    margin: 0 0 3px 0;
+    text-shadow: none;
+}
+
+.siteHeader h2 {
+    font-size: 0.8em;
+    color: rgba(0,0,0,0.5);
+    font-weight: 0.8em;
+    text-shadow: none;
+    margin: 0;
+}
+
+.topic-header {
+    background: #41bcff;
+    text-shadow: 0px 1px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.topic-header > .topic-name {
+    color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 1.8em;
+
+}
+
+.topic-header > .topic-stats {
+
+}
+
+.topic-header > .topic-stats .count {
+    color: white;
+    font-size: 0.8em;
+    text-align: center;
+}
+
+.topic-header > .topic-stats .bar {
+    display: block;
+    height: 15px;
+    margin: 5px;
+}
+
+.topic-header > .topic-stats .bar .segment {
+    display: inline-block;
+    float: left;
+    height: 100%;
+    background: white;
+}
+
+/* Splash */
+
+#splash {
+}
+
+#splash .camp {
+    width: 100%;
+    margin: 0;
+    background-image: url(/images/public/camp_dark.png);
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    height: 600px;
+    color: white;
+    font-size: 18px;
+}
+
+#splash .camp a:link, #splash .camp a:visited, #splash .camp a:hover {
+    color: #41A4FB;
+    border-bottom: 2px solid #41A4FB;
+    text-decoration: none;
+}
+
+#splash .camp a:hover {
+    color: white;
+}
+

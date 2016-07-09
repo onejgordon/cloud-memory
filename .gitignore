@@ -1,0 +1,10 @@
+*.pyc
+js/react/build/*
+server.sh
+update.sh
+templates/build/*
+node_modules/*
+dist/*
+docs/_build/*
+client_secrets.json
+lib/*

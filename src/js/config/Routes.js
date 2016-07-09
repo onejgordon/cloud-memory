@@ -1,0 +1,41 @@
+var React = require('react');
+
+var Site = require('components/Site');
+var App = require('components/App');
+var Main = require('components/Main');
+var Settings = require('components/Settings');
+var Public = require('components/Public');
+var Admin = require('components/Admin');
+
+var Login = require('components/Login');
+
+// Admin
+var AdminUsers = require('components/AdminUsers');
+
+var NotFound = require('components/NotFound');
+
+var Router = require('react-router');
+
+var DefaultRoute = Router.DefaultRoute;
+var Route = Router.Route;
+var IndexRoute = Router.IndexRoute;
+var IndexRedirect = Router.IndexRedirect;
+
+module.exports = (
+  <Route component={Site} path="/">
+    <IndexRedirect to="/app/public" />
+    <Route path="app" component={App}>
+      <IndexRedirect to="/app/main" />
+      <Route path="public" component={Public} />
+      <Route path="main" component={Main} />
+      <Route path="settings" component={Settings} />
+      <Route path="admin" component={Admin}>
+        <IndexRedirect to="/app/users" />
+        <Route path="users" component={AdminUsers}/>
+      </Route>
+      <Route path="login" component={Login}/>
+      <Route path="*" component={NotFound}/>
+    </Route>
+
+  </Route>
+);
