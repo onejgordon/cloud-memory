@@ -14,6 +14,7 @@ var bootstrap = require('bootstrap');
 var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
 var AppConstants = require('constants/AppConstants');
+var client_secrets = require('constants/client_secrets');
 import GoogleLogin from 'react-google-login';
 
 import connectToStores from 'alt-utils/lib/connectToStores';
@@ -81,7 +82,7 @@ class Login extends React.Component {
             <p className="lead">You can sign in with Google...</p>
             <GoogleLogin
               scope={scopes}
-              clientId={AppConstants.G_OAUTH_CLIENT_ID}
+              clientId={client_secrets.G_OAUTH_CLIENT_ID}
               buttonText="Google Sign In"
               offline={true}
               callback={this.googleOfflineCallback.bind(this)} />

@@ -3,7 +3,7 @@ var AppConstants = {
   SITENAME: "Cloud Memory",
   DESCRIPTION: "Explore day-long slices of your personal data.",
   COMPANY: "Shore East",
-  BASE_URL: "http://silicon-dream.appspot.com",
+  BASE_URL: "http://cloudmemory-app.appspot.com",
   SERVICES: [
     { value: "g_mail", label: "Gmail", configurable: false },
     { value: "g_calendar", label: "Google Calendar", configurable: false },
@@ -21,10 +21,16 @@ var AppConstants = {
   ST_ERROR: 2,
   ST_LOADED: 3,
   STATUS_ICONS: {
-    0: "fa fa-cancel",
+    0: "fa fa-cog fa-spin",
     1: "fa fa-refresh fa-spin",
     2: "fa fa-danger",
     3: "fa fa-check"
+  },
+  STATUS_COLORS: {
+    0: "black",
+    1: "black",
+    2: "red",
+    3: "green"
   },
   SERVICE_TYPES: [
     { value: 1, label: "Email", icon: "email" },
@@ -32,8 +38,6 @@ var AppConstants = {
     { value: 3, label: "Photo", icon: "photo" },
     { value: 4, label: "Task", icon: "check_circle" }
   ],
-  G_OAUTH_CLIENT_ID: "46232818432-jri64r1hike46om42c8mlv0gesa0e0r1.apps.googleusercontent.com",
-  G_OAUTH_CLIENT_SECRET: "MeyftOf7T7DEU6mIffNosE04",
   USER_STORAGE_KEY: 'sdUser'
 };
 

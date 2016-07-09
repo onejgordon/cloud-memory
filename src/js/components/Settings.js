@@ -82,7 +82,7 @@ export default class Settings extends React.Component {
         if (form.service_settings[svc_key] == null) form.service_settings[svc_key] = {};
         merge(form.service_settings[svc_key], data);
         form.service_settings = JSON.stringify(form.service_settings);
-        this.setState({form: form});
+        this.setState({form: form, unsaved: true});
     }
 
     show_configuration(svc_key) {

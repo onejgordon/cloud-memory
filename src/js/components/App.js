@@ -83,7 +83,6 @@ export default class App extends React.Component {
         );
     } else {
       var user_string = user.name || user.email || "User";
-      var loc = user.location_text || "Somewhere";
       var user_letter = user_string[0];
       var _avatar = (
         <Avatar
@@ -92,7 +91,7 @@ export default class App extends React.Component {
           size={30} style={{cursor:'pointer'}}>{user_letter.toUpperCase()}</Avatar>
       );
       _user_section = (
-        <div className="userSection col-sm-4 col-sm-offset-6">
+        <div className="userSection col-sm-3 col-sm-offset-6">
 
           <div className="userAvatar row">
             <div className="col-sm-10">
@@ -113,7 +112,7 @@ export default class App extends React.Component {
 
         <div id="container" className="container">
           <header className="topBar row">
-            <div className="siteHeader col-sm-2">
+            <div className="siteHeader col-sm-3">
               <Link to="/app"><h1 className="siteTitle">{ SITENAME }</h1></Link>
             </div>
 

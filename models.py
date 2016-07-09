@@ -171,7 +171,7 @@ class User(ndb.Model):
 class DaySearch(ndb.Model):
     '''
     Parent - User
-    Key - [user-id_day-iso]
+    Key - date_iso
     '''
     user = ndb.KeyProperty(User)
     date = ndb.StringProperty() # ISO
@@ -182,29 +182,37 @@ class DaySearch(ndb.Model):
         return {
             'id': self.key.id(),
             'date': self.date,
-            'user_id': self.user.key.id(),
+            'user_id': self.user.id(),
             'count': self.count,
             'starred': self.starred
         }
 
     @staticmethod
-    def kn(user=None, date=None):
-        return "%s_%s" % (user.key.id(), date)
+    def Star(user=None, date=None, do_star=True):
+        if user and date:
+            ds = DaySearch.get_by_id(date)
+            if ds:
+                ds.starred = do_star
+            else:
+                ds = DaySearch(id=date, user=user.key, date=date, count=0, starred=do_star, parent=user.key)
+            ds.put()
+            return (True, ds)
+        return (False, None)
+
 
     @staticmethod
     def Increment(user=None, date=None):
         if user and date:
-            kn = DaySearch.kn(user=user, date=date)
-            ds = DaySearch.get_by_id(kn)
+            ds = DaySearch.get_by_id(date)
             if ds:
                 ds.count += 1
             else:
-                ds = DaySearch(user=user.key, date=date, count=1)
+                ds = DaySearch(id=date, user=user.key, date=date, count=1, parent=user.key)
             ds.put()
 
     @staticmethod
-    def Starred(_max=20):
-        q = DaySearch.query().filter(DaySearch.starred == True)
+    def Starred(user=None, _max=20):
+        q = DaySearch.query().filter(DaySearch.user == user.key).filter(DaySearch.starred == True)
         return q.fetch(_max)
 
 class APILog(ndb.Model):

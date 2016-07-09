@@ -31,7 +31,7 @@ handlers:
   static_dir: js
 
 - url: /tasks/
-  script: justyesterday.app
+  script: cloudmemory.app
   login: admin
 
 - url: /dist/src
@@ -41,7 +41,7 @@ handlers:
   static_dir: dist/build
 
 - url: /admin/gauth.*
-  script: justyesterday.app
+  script: cloudmemory.app
   login: admin
   secure: always
 
@@ -49,7 +49,7 @@ handlers:
   static_dir: docs/_build/html
 
 - url: /.*
-  script: justyesterday.app
+  script: cloudmemory.app
 
 builtins:
 - deferred: on

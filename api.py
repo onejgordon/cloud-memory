@@ -341,3 +341,29 @@ class ServiceConfigureAPI(handlers.BaseRequestHandler):
         self.json_out(results, success=success, message=message)
 
 
+class SearchesAPI(handlers.BaseRequestHandler):
+    @authorized.role('api')
+    def star(self, d):
+        success = False
+        message = None
+        date = self.request.get('date')
+        do_star = self.request.get_range('star', default=1) == 1 # Unstar if 0
+
+        success, ds = DaySearch.Star(user=self.user, date=date, do_star=do_star)
+
+        self.json_out({
+            'date': date,
+            'starred': ds.starred if ds else False
+        }, success=success, message=message)
+
+    @authorized.role('api')
+    def starred(self, d):
+        success = False
+        message = None
+
+        starred_searches = DaySearch.Starred(user=self.user)
+        success = True
+
+        self.json_out({
+            'searches': [ds.json() for ds in starred_searches]
+        }, success=success, message=message)

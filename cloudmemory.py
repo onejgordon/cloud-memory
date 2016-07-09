@@ -54,6 +54,8 @@ app = webapp2.WSGIApplication(
       # API - Client
       webapp2.Route('/api/fetch', handler=api.FetchAPI, handler_method="fetch", methods=["POST"], name="FetchAPI"),
       webapp2.Route('/api/configure/<svc_key>', handler=api.ServiceConfigureAPI, handler_method="configure", methods=["GET"], name="ServiceConfigureAPI"),
+      webapp2.Route('/api/searches/star', handler=api.SearchesAPI, handler_method="star", methods=["POST"]),
+      webapp2.Route('/api/searches/starred', handler=api.SearchesAPI, handler_method="starred", methods=["GET"]),
       webapp2.Route('/api/user', handler=api.UserAPI, handler_method="update", methods=["POST"], name="UserAPI"),
       webapp2.Route('/api/user/<uid>', handler=api.UserAPI, handler_method="detail", methods=["GET"], name="UserAPI"),
       webapp2.Route('/api/apilog', handler=api.APILogAPI, handler_method="list", methods=["GET"]),

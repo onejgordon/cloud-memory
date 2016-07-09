@@ -13,6 +13,7 @@ class DataStore {
 
         // Store
         this.data = {}; // mckey (date and svc) -> day data object { results (arry), status (int), issue (str) }
+        this.starred_dates = null; // Array of ISO strings
 
         this.exportPublicMethods({
             mckey: this.mckey
@@ -27,6 +28,26 @@ class DataStore {
                     this.data[mckey] = data[mckey];
                     console.log("Got data for " + mckey);
                 }
+            }
+        }
+    }
+
+    onFetchRecentStars(data) {
+        if (data != null) {
+            this.starred_dates = data.searches.map((ds) => {
+                return ds.date;
+            });
+            console.log(this.starred_dates);
+        }
+    }
+
+    onStarDate(data) {
+        if (data != null) {
+            console.log(data);
+            if (data.starred) this.starred_dates.push(data.date);
+            else {
+                var i = this.starred_dates.indexOf(data.date);
+                if (i > -1) this.starred_dates.splice(i, 1);
             }
         }
     }
@@ -50,6 +71,16 @@ class DataStore {
         } else {
             // We have data for this date & service
             return day_data;
+        }
+    }
+
+    get_recent_stars() {
+        if (this.starred_dates == null) {
+            DataActions.fetchRecentStars();
+            return [];
+        } else {
+            // We have recent search data
+            return this.starred_dates;
         }
     }
 

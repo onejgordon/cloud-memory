@@ -4,8 +4,8 @@ npm==0.1.1
 numpy==1.9.2
 pbr==1.10.0
 webapp2==2.5.2
+oauth2client
 python-dateutil==2.1
-lxml==3.6.0
 WebTest==2.0.21
-google_api_python_client=1.5.1
-googleapiclient
+google_api_python_client==1.5.1
+python-gflags==2.0

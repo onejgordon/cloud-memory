@@ -150,31 +150,28 @@ header.topBar {
 
 .app-content {
     background: white;
-    margin: 20px 0px;
-    padding: 12px;
-    -webkit-border-radius:3px;
-    -moz-border-radius:3px;
-    border-radius: 3px;
 }
 
 .siteHeader {
     text-align: center;
+    margin-bottom: 15px;
 }
 
 .userSection {
     text-align: right;
 }
 
-.siteHeader h1 {
-}
-
 .siteHeader .siteTitle {
-    text-align: center;
     color: gray;
+    text-align: left;
     text-transform: uppercase;
     font-size: 1.2em;
     margin: 0 0 3px 0;
     text-shadow: none;
+}
+
+.siteHeader .siteTitle > a {
+    text-decoration: none;
 }
 
 .siteHeader h2 {
@@ -221,6 +218,17 @@ header.topBar {
     float: left;
     height: 100%;
     background: white;
+}
+
+/* Main */
+
+.loadStatuses {
+    direction: block;
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
 }
 
 /* Splash */

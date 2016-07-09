@@ -7,9 +7,7 @@ import cgi
 import hashlib
 import pytz
 import json
-import geopy
 from decimal import Decimal
-from geopy.distance import VincentyDistance
 
 def GenPasswd(length=8, chars=string.letters.upper()):
     return ''.join([random.choice(chars) for i in range(length)])
@@ -322,9 +320,6 @@ def escapejs(value):
         value = value.replace(bad, good)
     return value
 
-def error_json(msg):
-    return json.dumps({'error':msg})
-
 def dt_from_ts(ms):
     if ms == 0:
         return None
@@ -353,37 +348,6 @@ def parseTimeString(raw):
 def icon(group, id, size=15, label=None):
     label = escapejs(label) if label else ""
     return "<img src='/images/icons/%s_%s_%s.png' class='icon' title=\"%s\">" % (group, id, size, label)
-
-nauticalMilePerLat = 60.00721
-nauticalMilePerLongitude = 60.10793
-rad = math.pi / 180.0
-milesPerNauticalMile = 1.15078
-metersPerMile = 1609.344
-def calcDistance(lat1, lon1, lat2, lon2):
-    """
-    Caclulate distance between two lat lons in NM.
-    Return integer meters.
-    """
-    yDistance = (lat2 - lat1) * nauticalMilePerLat
-    xDistance = (math.cos(lat1 * rad) + math.cos(lat2 * rad)) * \
-               (lon2 - lon1) * (nauticalMilePerLongitude / 2)
-    distance = math.sqrt( yDistance**2 + xDistance**2 )
-    return int(distance * milesPerNauticalMile * metersPerMile)
-
-def calcLocDistance(loc1, loc2):
-    return calcDistance(loc1.lat, loc1.lon, loc2.lat, loc2.lon)
-
-def geoOffset(loc, bearing, d):
-    '''
-    loc as GeoPt
-    d in km
-    bearing in degrees
-    Returns GeoPt
-    '''
-    origin = geopy.Point(loc.lat, loc.lon)
-    destination = VincentyDistance(kilometers=d).destination(origin, bearing)
-    lat2, lon2 = destination.latitude, destination.longitude
-    return db.GeoPt(lat2, lon2)
 
 def minutes_in(dt=None):
     "# of minutes into the current day"
@@ -768,45 +732,3 @@ def add_batched_task(callable, name_prefix, interval_mins=5, warnOnDuplicate=Tru
     taskName = "bt_%s_%s_%s" % (name_prefix, callable.__name__, unixtime(runAt))
     # logging.debug("Scheduling task for %s - %s" % (runAt, taskName))
     safe_add_task(callable, _name=taskName, _eta=runAt, *args, **kwargs)
-
-def polygon_from_geojson(geoj):
-    '''
-    Args:
-        geoj: dictionary
-
-    Returns:
-        list: coordinates as list of lists or tuples (lat,lng)
-    '''
-    if "features" in geoj:
-        features = geoj.get('features')
-        if features:
-            f = features[0]
-            if "geometry" in f:
-                if "coordinates" in f["geometry"]:
-                    return f["geometry"]["coordinates"][0]
-    return None
-
-def point_inside_polygon(x,y,poly):
-    '''Determine whether a point is within a polygon.
-
-    Args:
-        x, y: coordinates
-        poly: list of (lat, lng) tuples
-
-    Returns:
-        bool: If point is inside polygon
-    '''
-    n = len(poly)
-    inside = False
-    p1x,p1y = poly[0]
-    for i in range(n+1):
-        p2x,p2y = poly[i % n]
-        if y > min(p1y,p2y):
-            if y <= max(p1y,p2y):
-                if x <= max(p1x,p2x):
-                    if p1y != p2y:
-                        xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
-                    if p1x == p2x or x <= xinters:
-                        inside = not inside
-        p1x,p1y = p2x,p2y
-    return inside
