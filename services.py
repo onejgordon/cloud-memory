@@ -3,6 +3,7 @@ from google.appengine.api import mail, images, urlfetch, memcache
 import os
 from datetime import datetime,timedelta
 import tools
+import urllib
 import authorized
 import logging
 from models import Item
@@ -15,7 +16,6 @@ from oauth2client import client
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-
 
 
 class ServiceError(Exception):
@@ -66,7 +66,6 @@ class ServiceFetcher_g_calendar(ServiceFetcher):
         super(ServiceFetcher_g_calendar, self).__init__(**kwargs)
 
     def fetch(self):
-        GCAL_DATE_FMT = "%Y-%m-%dT%H:%M:%SZ"
         logging.debug("Fetching google calendar data")
         self.build_service('calendar', 'v3')
         timeMin = self.date_dt.isoformat() + 'Z'
@@ -154,6 +153,78 @@ class ServiceFetcher_g_mail(ServiceFetcher):
                 self.items = [Item(svc=SERVICE.GMAIL, title=r.get('snippet'), id=r.get('id'), type=SERVICE.EMAIL).json() for r in results.get('threads', [])]
         return self.items
 
+class ServiceFetcher_g_drive(ServiceFetcher):
+
+    def __init__(self, **kwargs):
+        super(ServiceFetcher_g_drive, self).__init__(**kwargs)
+
+    def fetch(self):
+        self.build_service('drive', 'v3')
+        timeMin = self.date_dt.isoformat()
+        timeMax = self.next_date_dt.isoformat()
+        query = "(viewedByMeTime > '%s' and viewedByMeTime < '%s') OR (createdTime > '%s' and createdTime < '%s' and '%s' in owners)" % (timeMin, timeMax, timeMin, timeMax, self.user.email)
+        items = []
+        results = self.service.files().list(
+            orderBy='modifiedTime',
+            pageSize=self.limit,
+            spaces='drive,photos',
+            fields='files(createdTime,description,id,kind,viewedByMeTime,modifiedTime,name,spaces,webViewLink,thumbnailLink),kind',
+            q=query).execute()
+        for f in results.get('files', []):
+            spaces = f.get('spaces')
+            is_image = 'photos' in spaces
+            type = SERVICE.DOCUMENT if not is_image else SERVICE.PHOTO
+            webViewLink = f.get('webViewLink')
+            thumbnailLink = f.get('thumbnailLink')
+            item = Item(svc=SERVICE.GDRIVE,
+                title=f.get('name'),
+                id=f.get('id'),
+                image=webViewLink,
+                details=f.get('description'),
+                type=type)
+            if is_image:
+                logging.debug(f)
+            items.append(item.json())
+        return items
+
+
+class ServiceFetcher_nyt_news(ServiceFetcher):
+
+    # NOTE: No sort by date!
+
+    def __init__(self, **kwargs):
+        super(ServiceFetcher_nyt_news, self).__init__(**kwargs)
+
+    def fetch(self):
+        from secrets import NYT_API_KEY
+        SECTION = "World" # "U.S."
+        params = urllib.urlencode( {
+            'api-key': NYT_API_KEY,
+            'fq': "news_desk:\"%s\"" % SECTION,
+            'begin_date': datetime.strftime(self.date_dt, "%Y%m%d"),
+            'end_date': datetime.strftime(self.next_date_dt, "%Y%m%d")
+        } )
+        url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?" + params
+        response = urlfetch.fetch(url, method=urlfetch.GET)
+        items = []
+        IMAGE_BASE = "http://www.nytimes.com/"
+        MIN_WIDTH = 400
+        if response.status_code == 200:
+            j_response = json.loads(response.content)
+            results = j_response.get('response', {}).get('docs', [])
+            for news in results:
+                cat = news.get('news_desk')
+                multimedia = news.get('multimedia')
+                image = None
+                for mm in multimedia:
+                    w = mm.get('width')
+                    if w > MIN_WIDTH:
+                        image = IMAGE_BASE + mm.get('url')
+                item = Item(svc=SERVICE.NYT_NEWS, title=news.get('headline', {}).get('main'), image=image, details=news.get('snippet'), link=news.get('web_url'), id=news.get('_id'), type=SERVICE.NEWS)
+                items.append(item.json())
+        return items
+
+
 
 class ServiceFetcher_g_photo(ServiceFetcher):
 
@@ -161,6 +232,4 @@ class ServiceFetcher_g_photo(ServiceFetcher):
         super(ServiceFetcher_g_photo, self).__init__(**kwargs)
 
     def fetch(self):
-        logging.debug("Fetching photo data")
-        self.build_service('drive', 'v3')
-        appfolder = self.service.files().get(fileId='appfolder').execute()
+        raise ServiceError("Not implemented") # Google photo/picasa APIs in flux

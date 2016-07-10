@@ -12,6 +12,7 @@ var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
 var DataActions = require('actions/DataActions');
 var DataStore = require('stores/DataStore');
+var ReactTooltip = require('react-tooltip');
 var Select = require('react-select');
 var mui = require('material-ui'),
   List = mui.List,
@@ -20,6 +21,8 @@ var mui = require('material-ui'),
   FontIcon = mui.FontIcon,
   Tabs = mui.Tabs,
   Tab = mui.Tab,
+  GridTile = mui.GridTile,
+  GridList = mui.GridList,
   FontIcon = mui.FontIcon,
   IconButton = mui.IconButton,
   DatePicker = mui.DatePicker,
@@ -78,7 +81,9 @@ export default class Main extends React.Component {
           if (mckeys.length > 0) {
             DataActions.get_day_data(mckeys, date, limit);
             window.setTimeout(this.get_day.bind(this), 1000*5);
-          } else this.setState({loading: false});
+          } else {
+            this.setState({loading: false});
+          }
         }
     }
 
@@ -110,16 +115,46 @@ export default class Main extends React.Component {
       u.services_enabled.forEach((svc_key, i) => {
         var svc_data = this.get_service_data(svc_key);
         var svc = util.findItemById(AppConstants.SERVICES, svc_key, 'value');
-        var status_int = svc_data != null ? svc_data.status : AppConstants.ST_NOT_LOADED;
-        var icon = AppConstants.STATUS_ICONS[status_int];
-        var color = AppConstants.STATUS_COLORS[status_int];
-        var message = "";
-        if (svc_data != null) message = svc_data.issue || "";
-        var last = i == u.services_enabled.length - 1;
-        els.push(<span><b>{svc.label}</b> <i className={icon} style={{color: color}} title={message} /></span>)
-        if (!last) els.push(<span>&middot;</span>)
+        if (svc != null) {
+          var status_int = svc_data != null ? svc_data.status : AppConstants.ST_NOT_LOADED;
+          var icon = AppConstants.STATUS_ICONS[status_int];
+          var color = AppConstants.STATUS_COLORS[status_int];
+          var message = "";
+          if (svc_data != null) message = svc_data.issue || "";
+          var last = i == u.services_enabled.length - 1;
+          els.push(<span><b>{svc.label}</b> <i className={icon} style={{color: color}} data-tip={message} /></span>)
+          if (!last) els.push(<span>&middot;</span>)
+        }
       });
       return els;
+    }
+
+    any_load_errors() {
+      var u = this.props.user;
+      var services_enabled = this.enabled_services();
+      for (var i=0; i<services_enabled.length; i++) {
+        var svc_key = services_enabled[i];
+        var svc_data = this.get_service_data(svc_key);
+        if (svc_data != null) {
+          if (svc_data.status == AppConstants.ST_ERROR) {
+            console.log("Load error")
+            console.log(svc_data);
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    enabled_services() {
+      var u = this.props.user;
+      var svcs = [];
+      AppConstants.SERVICES.forEach((svc) => {
+        if (u.services_enabled.indexOf(svc.value) > -1) {
+          svcs.push(svc.value);
+        }
+      });
+      return svcs;
     }
 
     unfetched_mckeys() {
@@ -127,7 +162,7 @@ export default class Main extends React.Component {
       var date = this.state.form.date;
       var keys = [];
       if (date != null) {
-        u.services_enabled.forEach((svc) => {
+        this.enabled_services().forEach((svc) => {
           var svc_data = this.get_service_data(svc);
           if (svc_data == null ||
             (svc_data.status == AppConstants.ST_NOT_LOADED ||
@@ -140,25 +175,47 @@ export default class Main extends React.Component {
     }
 
     render_item(type, item) {
+      console.log(item);
       var icon = <FontIcon className="material-icons">{ type.icon }</FontIcon>
       var svc = util.findItemById(AppConstants.SERVICES, item.svc, 'value');
       var label = type.label + " | " + svc.label;
       if (item.subhead != null) label += " | " + item.subhead;
-      return <ListItem leftIcon={icon} primaryText={ item.title } secondaryText={ label } />
+      return <ListItem key={item.id} leftIcon={icon} primaryText={ item.title } secondaryText={ label } />
+    }
+
+    render_grid_item(type, item) {
+      return (
+        <GridTile
+          key={item.id}
+          title={item.title}
+          subtitle={item.subhead}>
+            <img src={item.image} />
+          </GridTile>
+        );
     }
 
     render_items_by_type(svc_type) {
       var items = this.get_items(svc_type.value);
       if (items.length == 0) return null;
-      return (
-        <Tab label={svc_type.label}>
+      var content;
+      if (svc_type.multimedia) {
+        content = (
+          <GridList style={{marginTop: "10px"}}>
+            { items.map((item) => {
+              return this.render_grid_item(svc_type, item);
+            }) }
+          </GridList>
+        )
+      } else {
+        content = (
           <List>
             { items.map((item) => {
               return this.render_item(svc_type, item);
             }) }
           </List>
-        </Tab>
-      )
+        )
+      }
+      return <Tab label={svc_type.label}>{content}</Tab>
     }
 
     star_date() {
@@ -191,14 +248,15 @@ export default class Main extends React.Component {
       _statuses = this.render_load_statuses();
       var items = this.get_items();
       var n_total_items = 0;
-      AppConstants.SERVICE_TYPES.forEach((svc_type) => {
-        var el = this.render_items_by_type(svc_type);
+      AppConstants.ITEM_TYPES.forEach((item_type) => {
+        var el = this.render_items_by_type(item_type);
         if (el != null) _viz.push(el);
       });
       var starred_dates = this.props.starred_dates || [];
       var menu_items = starred_dates.map((date_str) => {
         var date_obj = new Date(Date.parse(date_str));
         return <MenuItem
+          key={date_str}
           leftIcon={<FontIcon className="material-icons">star</FontIcon>}
           onClick={this.change_date.bind(this, null, date_obj)}
           primaryText={date_str} />
@@ -206,12 +264,15 @@ export default class Main extends React.Component {
       var search_starred = starred_dates.indexOf(date_string) > -1;
       var star_label = search_starred ? "Unstar this Date" : "Star this Date";
       var bound_star_handler = search_starred ? this.unstar_date.bind(this) : this.star_date.bind(this);
+      var show_statuses = loading || this.any_load_errors();
+      var toolbar_label = "Choose Date";
+      if (date_string != null) toolbar_label = "Showing items for " + date_string;
       return (
         <div>
 
             <Toolbar>
               <ToolbarGroup key={0} firstChild={true}>
-                <ToolbarTitle text="Choose Date" />
+                <ToolbarTitle text={toolbar_label} style={{marginLeft: "20px"}}/>
               </ToolbarGroup>
               <ToolbarGroup key={1} lastChild={true}>
 
@@ -235,7 +296,7 @@ export default class Main extends React.Component {
               </ToolbarGroup>
             </Toolbar>
 
-            <div className="loadStatuses" hidden={!loading}>
+            <div className="loadStatuses" hidden={!show_statuses}>
               { _statuses }
             </div>
 
@@ -244,6 +305,8 @@ export default class Main extends React.Component {
                 { _viz }
               </Tabs>
             </div>
+
+            <ReactTooltip place="top" effect="solid" />
 
         </div>
       );

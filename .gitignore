@@ -5,3 +5,4 @@ docs/_build/*
 client_secrets.json
 lib/*
 src/js/constants/client_secrets.js
+secrets.py

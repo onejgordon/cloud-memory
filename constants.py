@@ -28,11 +28,6 @@ GA_ID = ""
 SVC_DATA_MCKEY = "%s:%s" # svc:date
 
 # Flags
-ECHO_SMS_FORWARDING = True
-
-DEFAULT_RATES = ["KES","RWF"]
-
-ALERT_VIA_USERS = True
 DEBUG_API = False
 
 TEST_VERSIONS = ["test"]
@@ -47,6 +42,8 @@ class SERVICE():
     GCAL = "g_calendar"
     GPHOTO = "g_photo" # Picasa?
     GTASKS = "g_tasks"
+    GDRIVE = "g_drive"
+    NYT_NEWS = "nyt_news"
 
     # Statuses
 
@@ -55,18 +52,23 @@ class SERVICE():
     ERROR = 2
     LOADED = 3
 
-    # Types
+    # Item Types
     EMAIL = 1
     EVENT = 2
     PHOTO = 3
     TASK = 4
+    DOCUMENT = 5
+    NEWS = 6
 
+    # Sync with AppConstants
     SCOPES = {
-        GMAIL: "",
-        GTASKS: ""
+        GMAIL: "https://mail.google.com/",
+        GTASKS: "https://www.googleapis.com/auth/tasks.readonly",
+        GCAL: "https://www.googleapis.com/auth/calendar.readonly",
+        GDRIVE: "https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.photos.readonly"
     }
 
-    DEFAULT = [GMAIL, GCAL, GPHOTO, GTASKS]
+    DEFAULT = []
 
 
 class ERROR():

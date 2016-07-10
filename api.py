@@ -18,7 +18,7 @@ import httplib2
 from oauth2client import client
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 class PublicAPI(handlers.JsonRequestHandler):
 
@@ -65,6 +65,7 @@ class UserAPI(handlers.JsonRequestHandler):
     def update(self, d):
         success = False
         message = None
+        missing_scopes = []
         id = self.request.get_range('id')
         params = tools.gets(self, strings=['name','password','phone','email','location_text','currency'],
             integers=['level'], lists=['services_enabled'], json=['service_settings'], ignoreMissing=True)
@@ -77,6 +78,7 @@ class UserAPI(handlers.JsonRequestHandler):
         if user:
             isSelf = user.key == self.user.key
             user.Update(**params)
+            missing_scopes = user.check_available_scopes()
             user.put()
             success = True
         if user:
@@ -88,8 +90,10 @@ class UserAPI(handlers.JsonRequestHandler):
         else:
             message = "Problem creating user"
         data = {
-            'user': user.json() if user else None
-            }
+            'user': user.json() if user else None,
+        }
+        if user and missing_scopes:
+            data['oauth_uri'] = user.get_auth_uri(scope=' '.join(missing_scopes))
         self.json_out(data, success=success, message=message)
 
     @authorized.role('api')
@@ -156,31 +160,6 @@ class UploadMedia(handlers.BaseUploadHandler):
             else:
                 self.response.out.write("OK")
 
-class UploadProfilePhoto(handlers.BaseUploadHandler):
-    def post(self):
-        try:
-            file_infos = self.get_file_infos()
-            user = self.session.get('user')
-            urls = []
-            if user:
-                if len(file_infos):
-                    fi = file_infos[0]
-                    if fi and fi.gs_object_name:
-                        user.Update(av_data_key=fi.gs_object_name, av_content_type=fi.content_type)
-                        user.put()
-                        logging.debug("Setting user in session: %s" % user.avatar_serving_url())
-                        self.session['user'] = user
-                    else: raise Exception("Malformed")
-                else: raise Exception("No file data found")
-            else: raise Exception("Malformed")
-        except Exception, e:
-            logging.error(e)
-            self.response.out.write("Error: %s" % e)
-            self.response.set_status(500)
-        else:
-            if user:
-                self.json_out({'url': user.avatar_serving_url()})
-
 
 class Logout(handlers.JsonRequestHandler):
     def post(self):
@@ -189,63 +168,50 @@ class Logout(handlers.JsonRequestHandler):
                 del self.session[key]
         self.json_out({'success': True})
 
-class Login(handlers.BaseRequestHandler):
+class AuthenticateAPI(handlers.BaseRequestHandler):
     @authorized.role()
-    def post(self, d):
-        user = None
-        message = email = None
-        auth_code = self.request.get('code')
-        error_code = 0
-        ok = False
-        if auth_code:
-            ok, email, credentials_json = self.receive_auth_code(auth_code)
-            if ok and email:
-                user = User.GetByEmail(email)
+    def action(self, action, d):
+        base = "http://localhost:8080" if tools.on_dev_server() else BASE
+        if action == 'login':
+            scope = "email profile"
+            flow = User.get_auth_flow(scope=scope)
+            flow.params['access_type'] = 'offline'
+            flow.params['include_granted_scopes'] = 'true'
+            auth_uri = flow.step1_get_authorize_url(state=scope)
+            self.json_out({'auth_uri': auth_uri}, success=True, debug=True)
+
+        elif action == 'oauth2callback':
+
+            error = self.request.get('error')
+            code = self.request.get('code')
+            scope = self.request.get('scope')
+            state_scopes = self.request.get('state')
+
+            if code:
+                CLIENT_SECRET_FILE = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
+
+                credentials = client.credentials_from_clientsecrets_and_code(
+                    CLIENT_SECRET_FILE,
+                    scope.split(' '),
+                    code,
+                    redirect_uri=base + "/api/auth/oauth2callback")
+                user = self.user
+                if not user:
+                    email = credentials.id_token['email']
+                    user = User.GetByEmail(email)
+                    if not user:
+                        # Create account
+                        user = User.Create(email=email)
+
                 if user:
-                    if credentials_json:
-                        user.credentials = json.dumps(credentials_json)
-                        user.put()
-                else:
-                    # Create account
-                    user = User.Create(email=email, credentials=credentials_json)
-                    if user:
-                        user.put()
-
-        if ok:
-            message = "Successful Login"
-            self.session['user'] = user
-        else:
-            user = None
-
-        data = {
-            'ts': tools.unixtime(),
-            'user': user.json() if user else None
-        }
-        self.json_out(data, message=message, error=error_code)
+                    user.save_credentials(credentials)
+                    user.put()
+                    self.session['user'] = user
+            elif error:
+                logging.error(error)
 
 
-    def receive_auth_code(self, auth_code):
-        success = False
-        credentials_json = None
-        # TODO: Move up to standard login to store user in DB
-        # Set path to the Web application client_secret_*.json file you downloaded from the
-        # Google Developers Console: https://console.developers.google.com/apis/credentials?project=_
-        CLIENT_SECRET_FILE = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
-
-        # Exchange auth code for access token, refresh token, and ID token
-        credentials = client.credentials_from_clientsecrets_and_code(
-            CLIENT_SECRET_FILE,
-            ['https://www.googleapis.com/auth/drive.appdata', 'profile', 'email'],
-            auth_code)
-
-        if credentials:
-            success = True
-            credentials_json = credentials.to_json()
-        # TODO: How do we store refresh token? Do we need it?
-        userid = credentials.id_token['sub']
-        email = credentials.id_token['email']
-        # name = credentials.id_token['name']
-        return (success, email, credentials_json)
+            self.redirect("/app/settings")
 
 
 def background_service_fetch(uid, mckeys=None, limit=20):

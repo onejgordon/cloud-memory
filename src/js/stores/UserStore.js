@@ -14,7 +14,8 @@ class UserStore {
         this.error = null;
 
         this.exportPublicMethods({
-            get_user: this.get_user
+            get_user: this.get_user,
+            has_scopes: this.has_scopes
         });
     }
 
@@ -29,35 +30,38 @@ class UserStore {
     loadLocalUser() {
         var user;
         try {
-            user = JSON.parse(localStorage.getItem(AppConstants.USER_STORAGE_KEY));
+
+            switch (AppConstants.PERSISTENCE) {
+                case "bootstrap":
+                alt.bootstrap(JSON.stringify(alt_bootstrap));
+                break;
+
+                case "localstorage":
+                user = JSON.parse(localStorage.getItem(AppConstants.USER_STORAGE_KEY));
+                if (user) {
+                    console.log("Successfully loaded user " + user.email);
+                    this.storeUser(user);
+                }
+                break;
+            }
+
         } finally {
-            if (user) {
-                console.log("Successfully loaded user " + user.email);
-                this.storeUser(user);
+            if (this.user) {
+                console.log("Successfully loaded user " + this.user.email);
             }
         }
     }
 
     clearUser() {
         this.user = null;
-        // api.updateToken(null);
         localStorage.removeItem(AppConstants.USER_STORAGE_KEY);
     }
 
     onLogin(data) {
         if (data.ok) {
-            this.storeUser(data.user);
-            defer(browserHistory.push.bind(this, `/app`));
-        } else {
-            this.clearUser();
-            this.error = data.error;
-        }
-    }
-
-    onOfflineLogin(data) {
-        if (data.ok) {
-            this.storeUser(data.user);
-            defer(browserHistory.push.bind(this, `/app`));
+            // this.storeUser(data.user);
+            // defer(browserHistory.push.bind(this, `/app/main`));
+            window.location = data.redirect;
         } else {
             this.clearUser();
             this.error = data.error;
@@ -69,16 +73,27 @@ class UserStore {
             this.clearUser();
             this.error = null;
             toastr.success("You're logged out!");
-            history.replaceState(null, '/');
+            browserHistory.push('/app/public');
         }
     }
 
     onUpdate(data) {
         this.storeUser(data.user);
+        if (data.oauth_uri != null) {
+            window.location = data.oauth_uri;
+        }
     }
 
-    manualUpdate(user) {
-        this.storeUser(user);
+    has_scopes(svc) {
+        var u = this.getState().user;
+        if (u.scopes == null || u.scopes.length == 0) return false;
+        if (svc.scopes != null) {
+            var ok = true;
+            svc.scopes.forEach((scope) => {
+                if (u.scopes.indexOf(scope) == -1) ok = false;
+            })
+            return ok;
+        } else return true;
     }
 
     // Automatic
@@ -87,6 +102,7 @@ class UserStore {
         var u = this.getState().users[uid];
         return u;
     }
+
 }
 
 module.exports = alt.createStore(UserStore, 'UserStore');

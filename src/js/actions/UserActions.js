@@ -8,7 +8,7 @@ class UserActions {
 
 	constructor() {
 		// Automatic action
-		this.generateActions('loadLocalUser', 'manualUpdate');
+		this.generateActions('loadLocalUser');
 	}
 
 	// Manual actions
@@ -26,11 +26,11 @@ class UserActions {
 		}
 	}
 
-	login(data) {
+	login() {
 		return function(dispatch) {
 			try {
-				$.post('/api/login', data, (res) => {
-					dispatch({ok: res.success, user: res.data.user, error: res.message});
+				$.post('/api/auth/login', {}, (res) => {
+					dispatch({ok: res.success, redirect: res.data.auth_uri});
 				}, 'json');
 			} catch (err) {
 				console.error(err);
@@ -39,20 +39,6 @@ class UserActions {
 		}
 	}
 
-	offlineLogin(code) {
-		console.log(code);
-		return function(dispatch) {
-			console.log(code);
-			try {
-				$.post('/api/login', {code: code}, (res) => {
-					dispatch({ok: res.success, user: res.data.user, error: res.message});
-				}, 'json');
-			} catch (err) {
-				console.error(err);
-				dispatch({ok: false, error: err.data});
-			}
-		}
-	}
 
 	update(data) {
 		return (dispatch) => {

@@ -4,10 +4,9 @@ var Site = require('components/Site');
 var App = require('components/App');
 var Main = require('components/Main');
 var Settings = require('components/Settings');
+var About = require('components/About');
 var Public = require('components/Public');
 var Admin = require('components/Admin');
-
-var Login = require('components/Login');
 
 // Admin
 var AdminUsers = require('components/AdminUsers');
@@ -23,17 +22,17 @@ var IndexRedirect = Router.IndexRedirect;
 
 module.exports = (
   <Route component={Site} path="/">
-    <IndexRedirect to="/app/public" />
+    <IndexRedirect to="/app" />
     <Route path="app" component={App}>
       <IndexRedirect to="/app/main" />
       <Route path="public" component={Public} />
       <Route path="main" component={Main} />
+      <Route path="about" component={About} />
       <Route path="settings" component={Settings} />
       <Route path="admin" component={Admin}>
         <IndexRedirect to="/app/users" />
         <Route path="users" component={AdminUsers}/>
       </Route>
-      <Route path="login" component={Login}/>
       <Route path="*" component={NotFound}/>
     </Route>
 

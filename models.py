@@ -4,9 +4,7 @@ import webapp2
 from google.appengine.ext import ndb, deferred, blobstore
 from google.appengine.api import memcache, mail, images, taskqueue, search
 import json
-from markupsafe import Markup
 from constants import *
-from decorators import auto_cache
 import tools
 from oauth2client import client
 import httplib2
@@ -47,6 +45,9 @@ class User(ndb.Model):
             'services_enabled': self.services_enabled,
             'service_settings': tools.getJson(self.service_settings)
         }
+        credentials = tools.getJson(self.credentials)
+        if credentials:
+            data['scopes'] = credentials.get('scopes')
         return data
 
     @staticmethod
@@ -104,10 +105,44 @@ class User(ndb.Model):
         svc_settings = tools.getJson(self.service_settings)
         return svc_settings.get(svc_key, {})
 
+    def save_credentials(self, credentials_object):
+        logging.debug('save_credentials')
+        logging.debug(credentials_object.to_json())
+        self.credentials = json.dumps(credentials_object.to_json())
+
+    @classmethod
+    def get_auth_flow(cls, scope, user=None):
+        import os
+        CLIENT_SECRET_FILE = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
+        base = 'http://localhost:8080' if tools.on_dev_server() else BASE
+        flow = client.flow_from_clientsecrets(
+            CLIENT_SECRET_FILE,
+            scope=scope,
+            cache=memcache,
+            login_hint=user.email if user else None,
+            message="Woops! client_secrets.json missing or invalid",
+            redirect_uri='%s/api/auth/oauth2callback' % base)
+        flow.params['include_granted_scopes'] = 'true'
+        flow.params['access_type'] = 'offline'
+        return flow
+
     def get_credentials(self):
         if self.credentials:
-            return client.Credentials.new_from_json(json.loads(self.credentials))
+            cr = client.Credentials.new_from_json(json.loads(self.credentials))
+            expires_in = cr.token_expiry - datetime.utcnow()
+            logging.debug("expires_in: %s" % expires_in)
+            if expires_in < timedelta(minutes=15):
+                cr.refresh(httplib2.Http())
+                self.save_credentials(cr)
+                self.put()
+            return cr
         return None
+
+    def get_auth_uri(self, scope, state=None):
+        base = 'http://localhost:8080' if tools.on_dev_server() else BASE
+        flow = User.get_auth_flow(scope=scope, user=self)
+        auth_uri = flow.step1_get_authorize_url(state=state)
+        return auth_uri
 
     def get_http_auth(self):
         cr = self.get_credentials()
@@ -115,6 +150,28 @@ class User(ndb.Model):
             http_auth = cr.authorize(httplib2.Http())
             return http_auth
         return None
+
+    def check_available_scopes(self):
+        cr = self.get_credentials()
+        scopes = cr.retrieve_scopes(httplib2.Http())
+        missing_scopes = []
+        for scope in self.needed_scopes():
+            if scope not in scopes:
+                missing_scopes.append(scope)
+        if missing_scopes:
+            logging.debug("Missing scopes: %s" % missing_scopes)
+        return missing_scopes
+
+    def needed_scopes(self):
+        '''
+        Return space separated string of scopes needed for enabled services.
+        '''
+        scopes = []
+        for svc in self.services_enabled:
+            svc_scopes = SERVICE.SCOPES.get(svc)
+            if svc_scopes:
+                scopes.extend(svc_scopes.split(' '))
+        return scopes
 
     def print_level(self):
         return USER.LABELS.get(self.level)
@@ -144,29 +201,6 @@ class User(ndb.Model):
         self.pw_salt, self.pw_sha = tools.getSHA(pw)
         return pw
 
-    @staticmethod
-    def ValidateLogin(user, password):
-        pw_valid = False
-        login_attempts = None
-        if user and password:
-            pw_valid, login_attempts = user.validatePassword(password)
-        return pw_valid, login_attempts
-
-    def avatar_serving_url(self, size=500):
-        if self.av_data_key:
-            gskey = blobstore.create_gs_key(filename=self.av_data_key)
-            return images.get_serving_url(gskey, size=size)
-        else:
-            return "/images/user.png"
-
-    def has_avatar(self):
-        return self.av_data_key is not None
-
-    def get_groups(self):
-        if self.group_ids:
-            return SensorGroup.get_by_id(self.group_ids)
-        else:
-            return []
 
 class DaySearch(ndb.Model):
     '''
@@ -279,13 +313,14 @@ class APILog(ndb.Model):
 
 class Item(object):
 
-    def __init__(self, id=None, svc=None, title=None, subhead=None, details=None, link=None, type=None):
+    def __init__(self, id=None, svc=None, title=None, subhead=None, image=None, details=None, link=None, type=None):
         self.id = id
         self.svc = svc
         self.title = title
         self.subhead = subhead
         self.details = details
         self.link = link
+        self.image = image
         self.type = type
 
 
@@ -296,6 +331,7 @@ class Item(object):
             'title': self.title,
             'subhead': self.subhead,
             'details': self.details,
+            'image': self.image,
             'link': self.link,
             'type': self.type
         }

@@ -4,11 +4,14 @@ var AppConstants = {
   DESCRIPTION: "Explore day-long slices of your personal data.",
   COMPANY: "Shore East",
   BASE_URL: "http://cloudmemory-app.appspot.com",
+  PERSISTENCE: "bootstrap",
   SERVICES: [
-    { value: "g_mail", label: "Gmail", configurable: false },
-    { value: "g_calendar", label: "Google Calendar", configurable: false },
-    { value: "g_photo", label: "Google Photos", configurable: false },
-    { value: "g_tasks", label: "Google Tasks", configurable: true }
+    { value: "g_mail", label: "Gmail", configurable: false, personal: true, scopes: ["https://mail.google.com/"] },
+    { value: "g_calendar", label: "Google Calendar", configurable: false, personal: true, scopes: ["https://www.googleapis.com/auth/calendar.readonly"] },
+    // { value: "g_photo", label: "Google Photos", configurable: false },
+    { value: "g_tasks", label: "Google Tasks", configurable: true, personal: true, scopes: ["https://www.googleapis.com/auth/tasks.readonly"] },
+    { value: "g_drive", label: "Google Drive", personal: true, scopes: ["https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.readonly","https://www.googleapis.com/auth/drive.photos.readonly"] },
+    { value: "nyt_news", label: "NYT News", personal: false }
   ],
   USER_READ: 1,
   USER_RW: 2,
@@ -23,7 +26,7 @@ var AppConstants = {
   STATUS_ICONS: {
     0: "fa fa-cog fa-spin",
     1: "fa fa-refresh fa-spin",
-    2: "fa fa-danger",
+    2: "fa fa-warning",
     3: "fa fa-check"
   },
   STATUS_COLORS: {
@@ -32,11 +35,13 @@ var AppConstants = {
     2: "red",
     3: "green"
   },
-  SERVICE_TYPES: [
+  ITEM_TYPES: [
     { value: 1, label: "Email", icon: "email" },
     { value: 2, label: "Event", icon: "event" },
-    { value: 3, label: "Photo", icon: "photo" },
-    { value: 4, label: "Task", icon: "check_circle" }
+    { value: 3, label: "Photo", icon: "photo", multimedia: true },
+    { value: 4, label: "Task", icon: "check_circle" },
+    { value: 5, label: "Document", icon: "insert_drive_file" },
+    { value: 6, label: "News", icon: "radio", multimedia: true }
   ],
   USER_STORAGE_KEY: 'sdUser'
 };

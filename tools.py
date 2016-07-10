@@ -732,3 +732,8 @@ def add_batched_task(callable, name_prefix, interval_mins=5, warnOnDuplicate=Tru
     taskName = "bt_%s_%s_%s" % (name_prefix, callable.__name__, unixtime(runAt))
     # logging.debug("Scheduling task for %s - %s" % (runAt, taskName))
     safe_add_task(callable, _name=taskName, _eta=runAt, *args, **kwargs)
+
+
+def generate_nonce(length=8):
+    """Generate pseudorandom number."""
+    return ''.join([str(random.randint(0, 9)) for i in range(length)])

@@ -19,7 +19,6 @@ var mui = require('material-ui'),
   Tabs = mui.Tabs,
   Tab = mui.Tab,
   Toggle = mui.Toggle,
-  FlatButton = mui.FlatButton,
   Dialog = mui.Dialog,
   DatePicker = mui.DatePicker,
   IconButton = mui.IconButton,
@@ -27,7 +26,7 @@ var mui = require('material-ui'),
 import connectToStores from 'alt-utils/lib/connectToStores';
 
 @connectToStores
-export default class Settings extends React.Component {
+export default class About extends React.Component {
     static defaultProps = {}
     constructor(props) {
         super(props);
@@ -98,22 +97,17 @@ export default class Settings extends React.Component {
         });
         return services.map((svc) => {
             var enabled = form.services_enabled.indexOf(svc.value) > -1;
-            var config_link;
-            if (svc.configurable) {
-                var config_enabled = enabled && UserStore.has_scopes(svc);
-                config_link = <FlatButton disabled={!config_enabled} onClick={this.show_configuration.bind(this, svc.value)} label="Configure" icon={<FontIcon className="material-icons">settings</FontIcon>} />
-            }
+            var config_icon;
+            if (svc.configurable) config_icon = <a href="javascript:void(0)" disabled={!enabled} onClick={this.show_configuration.bind(this, svc.value)}><i className="fa fa-cog"/></a>
             return (
-                <div className="row" key={svc.value}>
-                    <div className="col-sm-4">
+                <div className="row">
+                    <div className="col-sm-1">
                         <div className="text-center">
-                            { config_link }
+                            { config_icon }
                         </div>
                     </div>
-                    <div className="col-sm-8">
-                        <div style={{padding: "5px"}}>
-                            <Toggle labelPosition="right" label={svc.label} onToggle={this.toggle_service.bind(this, svc.value)} toggled={enabled} />
-                        </div>
+                    <div className="col-sm-11">
+                        <Toggle labelPosition="right" label={svc.label} onToggle={this.toggle_service.bind(this, svc.value)} toggled={enabled} />
                     </div>
                 </div>
             );
@@ -132,21 +126,10 @@ export default class Settings extends React.Component {
         return (
             <div>
 
-                <h1>Settings</h1>
+                <h1>About</h1>
 
-                <Dialog open={config_svc_key != null} onRequestClose={this.show_configuration.bind(this, null)}>
-                    { _config }
-                </Dialog>
+                <p className="lead">About...</p>
 
-                <h2>Personal Data Sources</h2>
-
-                { personal_service_toggles }
-
-                <h2>Public Data Sources</h2>
-
-                { public_service_toggles }
-
-                <RaisedButton primary={true} label={save_label} onClick={this.save.bind(this)} disabled={!this.state.unsaved} />
             </div>
         );
     }

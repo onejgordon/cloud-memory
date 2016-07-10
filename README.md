@@ -16,5 +16,4 @@ https://developers.google.com/identity/sign-in/web/server-side-flow#step_5_sign_
 
 * Incremental authorization
 * Search gcal for date
-* Picasa API
 * Event timeline

@@ -16,6 +16,7 @@ var mui = require('material-ui'),
   IconButton = mui.IconButton,
   IconMenu = mui.IconMenu,
   Avatar = mui.Avatar,
+  FontIcon = mui.FontIcon,
   MenuItem = mui.MenuItem;
 
 var AppConstants = require('constants/AppConstants');
@@ -78,7 +79,7 @@ export default class App extends React.Component {
     if (!user) {
       _user_section = (
         <div className="pull-right">
-          <Link to="/app/login"><FlatButton label="Sign In" /></Link>
+          <FlatButton icon={<i className="fa fa-google" />} label="Sign In" onClick={UserActions.login.bind(this)} />
         </div>
         );
     } else {
@@ -99,7 +100,8 @@ export default class App extends React.Component {
             </div>
             <div className="col-sm-2">
               <IconMenu iconButtonElement={ _avatar } onChange={this.menuSelect.bind(this, 'user')}>
-                <MenuItem value="/app/settings" primaryText="Settings" />
+                <MenuItem value="/app/about" primaryText="About" />
+                <MenuItem value="/app/settings" iconLeft={<FontIcon className="material-icons">settings</FontIcon>} primaryText="Settings" />
                 <MenuItem value="logout" primaryText="Sign Out" />
               </IconMenu>
             </div>

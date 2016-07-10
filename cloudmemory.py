@@ -4,7 +4,7 @@ import webapp2
 from actions import actions, adminActions, cronActions, schemaActions
 import tasks
 from views import views
-import settings
+import secrets
 import api
 
 SECS_PER_WEEK = 60 * 60 * 24 * 7
@@ -26,7 +26,7 @@ curr_path = os.path.abspath(os.path.dirname(__file__))
 
 config = {
       'webapp2_extras.sessions': {
-            'secret_key': settings.COOKIE_KEY,
+            'secret_key': secrets.COOKIE_KEY,
             'session_max_age': SECS_PER_WEEK,
             'cookie_args': {'max_age': SECS_PER_WEEK},
             'cookie_name': 'echo_sense_session'
@@ -38,7 +38,6 @@ config = {
 
 app = webapp2.WSGIApplication(
      [
-      webapp2.Route('/users/<id>', handler=views.UserDetail, name="vUserDetail"),
 
       # Admin Actions
       webapp2.Route('/admin/gauth/init', handler=adminActions.Init, name="aInit"),
@@ -47,8 +46,8 @@ app = webapp2.WSGIApplication(
       webapp2.Route('/admin/actions/users/<ukey>/logout', handler=adminActions.LogoutUser, name="LogoutUser"),
 
       # API - Auth
-      webapp2.Route('/api/login', handler=api.Login, name="apiLogin"),
-      webapp2.Route('/api/login/receive_auth_code', handler=api.Login, handler_method="receive_auth_code"),
+      # webapp2.Route('/api/login', handler=api.Login, name="apiLogin"),
+      # webapp2.Route('/api/login/receive_auth_code', handler=api.Login, handler_method="receive_auth_code"),
       webapp2.Route('/api/logout', handler=api.Logout, name="apiLogout"),
 
       # API - Client
@@ -59,17 +58,19 @@ app = webapp2.WSGIApplication(
       webapp2.Route('/api/user', handler=api.UserAPI, handler_method="update", methods=["POST"], name="UserAPI"),
       webapp2.Route('/api/user/<uid>', handler=api.UserAPI, handler_method="detail", methods=["GET"], name="UserAPI"),
       webapp2.Route('/api/apilog', handler=api.APILogAPI, handler_method="list", methods=["GET"]),
+      webapp2.Route('/api/auth/<action>', handler=api.AuthenticateAPI, handler_method="action"),
 
       # Misc
       webapp2.Route('/res/<bk>', handler=views.ServeBlob, name="ServeBlob"),
       webapp2.Route('/_ah/warmup', handler=actions.WarmupHandler),
+
 
       # Cron jobs (see cron.yaml)
       webapp2.Route('/cron/monthly', handler=cronActions.Monthly),
       webapp2.Route('/cron/digests/admin', handler=cronActions.AdminDigest),
       webapp2.Route('/cron/oauth/google_key_certs', handler=adminActions.UpdateGoogleKeyCerts),
 
-      webapp2.Route(r'/<:.*>', handler=views.MegaphoneApp, name="MegaphoneApp"),
+      webapp2.Route(r'/<:.*>', handler=views.CloudmemoryApp, name="CloudmemoryApp"),
 
 
       ], debug=True,

@@ -36,13 +36,11 @@ class Public extends React.Component {
   }
 
   componentDidMount() {
-    console.log("mounted public");
     $("body").addClass("public");
     // $('link[title=public_css]').prop('disabled',false);
   }
 
   componentWillUnmount() {
-    console.log("unmounting public");
     $("body").removeClass("public");
     // $('link[title=public_css]').prop('disabled',true);
   }
