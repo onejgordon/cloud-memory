@@ -13,6 +13,7 @@ import {
 
 var mui = require('material-ui'),
   FlatButton = mui.FlatButton,
+  RaisedButton = mui.RaisedButton,
   IconButton = mui.IconButton,
   IconMenu = mui.IconMenu,
   Avatar = mui.Avatar,
@@ -79,7 +80,7 @@ export default class App extends React.Component {
     if (!user) {
       _user_section = (
         <div className="pull-right">
-          <FlatButton icon={<i className="fa fa-google" />} label="Sign In" onClick={UserActions.login.bind(this)} />
+          <RaisedButton primary={true} icon={<i className="fa fa-google" />} label="Sign In" onClick={UserActions.login.bind(this)} />
         </div>
         );
     } else {

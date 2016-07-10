@@ -23,7 +23,7 @@ var api = {
 			toastr.error("An unknown error has occurred");
 			if (status == 401) {
 				localStorage.removeItem(AppConstants.USER_STORAGE_KEY);
-				window.location = "/";
+				window.location = "/app/public";
 			}
 			if (typeof(fail) === 'function') fail();
 		});
@@ -47,7 +47,7 @@ var api = {
 			var status = jqxhr.status;
 			if (status == 401) {
 				localStorage.removeItem(AppConstants.USER_STORAGE_KEY);
-				window.location = "/";
+				window.location = "/app/public";
 			}
 			toastr.error("An unknown error has occurred");
 			if (typeof(fail) === 'function') fail();

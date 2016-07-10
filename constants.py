@@ -26,6 +26,7 @@ SENDER_EMAIL = "%s Notifications <noreply@%s.appspotmail.com>" % (SITENAME, APPN
 
 GA_ID = ""
 SVC_DATA_MCKEY = "%s:%s" # svc:date
+MEMCACHE_EXPIRE_SECS = 60*60*3
 
 # Flags
 DEBUG_API = False
@@ -40,7 +41,6 @@ class SERVICE():
     # Service Keys
     GMAIL = "g_mail"
     GCAL = "g_calendar"
-    GPHOTO = "g_photo" # Picasa?
     GTASKS = "g_tasks"
     GDRIVE = "g_drive"
     NYT_NEWS = "nyt_news"

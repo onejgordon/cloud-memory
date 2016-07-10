@@ -8,7 +8,6 @@ var AppConstants = {
   SERVICES: [
     { value: "g_mail", label: "Gmail", configurable: false, personal: true, scopes: ["https://mail.google.com/"] },
     { value: "g_calendar", label: "Google Calendar", configurable: false, personal: true, scopes: ["https://www.googleapis.com/auth/calendar.readonly"] },
-    // { value: "g_photo", label: "Google Photos", configurable: false },
     { value: "g_tasks", label: "Google Tasks", configurable: true, personal: true, scopes: ["https://www.googleapis.com/auth/tasks.readonly"] },
     { value: "g_drive", label: "Google Drive", personal: true, scopes: ["https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.readonly","https://www.googleapis.com/auth/drive.photos.readonly"] },
     { value: "nyt_news", label: "NYT News", personal: false }

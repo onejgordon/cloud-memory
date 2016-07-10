@@ -36,6 +36,7 @@ def config_g_tasks(user, http_auth):
         "input": "select",
         "multi": False,
         "prop": "taskList",
+        "instructions": "Choose a task list",
         "options": options
     }
 
@@ -44,7 +45,7 @@ def config_g_tasks(user, http_auth):
 
 class ServiceFetcher(object):
 
-    def __init__(self, user=None, date_dt=None, next_date_dt=None, http_auth=None, limit=10):
+    def __init__(self, user=None, date_dt=None, next_date_dt=None, http_auth=None, limit=30):
         self.user = user
         self.date_dt = date_dt
         self.next_date_dt = next_date_dt
@@ -179,7 +180,7 @@ class ServiceFetcher_g_drive(ServiceFetcher):
             item = Item(svc=SERVICE.GDRIVE,
                 title=f.get('name'),
                 id=f.get('id'),
-                image=webViewLink,
+                image=thumbnailLink,
                 details=f.get('description'),
                 type=type)
             if is_image:
@@ -189,8 +190,6 @@ class ServiceFetcher_g_drive(ServiceFetcher):
 
 
 class ServiceFetcher_nyt_news(ServiceFetcher):
-
-    # NOTE: No sort by date!
 
     def __init__(self, **kwargs):
         super(ServiceFetcher_nyt_news, self).__init__(**kwargs)
@@ -205,6 +204,7 @@ class ServiceFetcher_nyt_news(ServiceFetcher):
             'end_date': datetime.strftime(self.next_date_dt, "%Y%m%d")
         } )
         url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?" + params
+        logging.debug(url)
         response = urlfetch.fetch(url, method=urlfetch.GET)
         items = []
         IMAGE_BASE = "http://www.nytimes.com/"
@@ -225,11 +225,3 @@ class ServiceFetcher_nyt_news(ServiceFetcher):
         return items
 
 
-
-class ServiceFetcher_g_photo(ServiceFetcher):
-
-    def __init__(self, **kwargs):
-        super(ServiceFetcher_g_photo, self).__init__(**kwargs)
-
-    def fetch(self):
-        raise ServiceError("Not implemented") # Google photo/picasa APIs in flux

@@ -57,6 +57,7 @@ export default class SimpleChoiceConfigurerer extends React.Component {
         input: res.data.input,
         multi: res.data.multi,
         prop: res.data.prop,
+        instructions: res.data.instructions,
         options: res.data.options
       });
     });
@@ -71,7 +72,7 @@ export default class SimpleChoiceConfigurerer extends React.Component {
   }
 
   render() {
-    var _input;
+    var _input, _instructions;
     var form = this.state.form;
     var svc = util.findItemById(AppConstants.SERVICES, this.props.svc_key, 'value');
     var prop = this.state.prop;
@@ -83,6 +84,9 @@ export default class SimpleChoiceConfigurerer extends React.Component {
       );
       ready = form[prop] != null;
     }
+    if (this.state.instructions) {
+      _instructions = <p className="lead">{ this.state.instructions }</p>
+    }
     return (
       <div style={{minHeight: "300px"}}>
         <h2><FontIcon className="material-icons">settings</FontIcon> { svc.label }</h2>
@@ -90,6 +94,8 @@ export default class SimpleChoiceConfigurerer extends React.Component {
         <div hidden={ready}>
           <FlatButton primary={true} label={ this.props.cta } onClick={this.config_call.bind(this)} />
         </div>
+
+        { _instructions }
 
         <div className="row">
           <div className="col-sm-6">

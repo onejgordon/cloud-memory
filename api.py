@@ -232,7 +232,6 @@ def background_service_fetch(uid, mckeys=None, limit=20):
             memcache.set_multi(to_cache)
             for mckey in mckeys:
                 svc, date = mckey.split(':')
-                logging.debug(svc)
                 date_dt = tools.fromISODate(date)
                 next_date_dt = date_dt + timedelta(days=1)
                 items = []
@@ -252,7 +251,7 @@ def background_service_fetch(uid, mckeys=None, limit=20):
                     'status': SERVICE.LOADED if not issue else SERVICE.ERROR,
                     'issue': issue
                 }
-                memcache.set(mckey, to_cache)
+                memcache.set(mckey, to_cache, time=MEMCACHE_EXPIRE_SECS)
 
             if date:
                 # Log search
