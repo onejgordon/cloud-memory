@@ -245,7 +245,7 @@ class ServiceFetcher_nyt_news(ServiceFetcher):
         response = urlfetch.fetch(url, method=urlfetch.GET)
         items = []
         IMAGE_BASE = "http://www.nytimes.com/"
-        MIN_WIDTH = 400
+        MIN_WIDTH = 300
         if response.status_code == 200:
             j_response = json.loads(response.content)
             results = j_response.get('response', {}).get('docs', [])

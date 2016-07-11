@@ -128,7 +128,9 @@ export default class About extends React.Component {
 
                 <h1>About</h1>
 
-                <p className="lead">About...</p>
+                <p className="lead">{ AppConstants.DESCRIPTION }</p>
+
+                <p className="lead">An experiment in liberating personal data.</p>                
 
             </div>
         );

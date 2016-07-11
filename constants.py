@@ -2,7 +2,7 @@
 # General info
 
 COMPANY_NAME = "Shore East"
-SITENAME = "Cloud Memory"
+SITENAME = "Cloudy Memory"
 EMAIL_PREFIX = "[ %s ] " % SITENAME
 APPNAME = "cloudmemory-app"
 BASE = "http://%s.appspot.com" % APPNAME

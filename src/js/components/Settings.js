@@ -138,6 +138,8 @@ export default class Settings extends React.Component {
                     { _config }
                 </Dialog>
 
+                <p className="lead">Choose the sources you'd like to connect</p>
+                
                 <h2>Personal Data Sources</h2>
 
                 { personal_service_toggles }

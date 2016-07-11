@@ -1,6 +1,6 @@
 var AppConstants = {
   YEAR: "2016",
-  SITENAME: "Cloud Memory",
+  SITENAME: "Cloudy Memory",
   DESCRIPTION: "Explore day-long slices of your personal data.",
   COMPANY: "Shore East",
   BASE_URL: "http://cloudmemory-app.appspot.com",

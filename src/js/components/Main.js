@@ -138,7 +138,6 @@ export default class Main extends React.Component {
         if (svc_data != null) {
           if (svc_data.status == AppConstants.ST_ERROR) {
             console.log("Load error")
-            console.log(svc_data);
             return true;
           }
         }
@@ -175,7 +174,6 @@ export default class Main extends React.Component {
     }
 
     render_item(type, item) {
-      console.log(item);
       var icon = <FontIcon className="material-icons">{ type.icon }</FontIcon>
       var svc = util.findItemById(AppConstants.SERVICES, item.svc, 'value');
       var label = type.label + " | " + svc.label;

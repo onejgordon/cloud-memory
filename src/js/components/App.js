@@ -77,13 +77,7 @@ export default class App extends React.Component {
     var YEAR = AppConstants.YEAR;
     var SITENAME = AppConstants.SITENAME;
     var _user_section;
-    if (!user) {
-      _user_section = (
-        <div className="pull-right">
-          <RaisedButton primary={true} icon={<i className="fa fa-google" />} label="Sign In" onClick={UserActions.login.bind(this)} />
-        </div>
-        );
-    } else {
+    if (user != null) {
       var user_string = user.name || user.email || "User";
       var user_letter = user_string[0];
       var _avatar = (
@@ -116,7 +110,9 @@ export default class App extends React.Component {
         <div id="container" className="container">
           <header className="topBar row">
             <div className="siteHeader col-sm-3">
-              <Link to="/app"><h1 className="siteTitle">{ SITENAME }</h1></Link>
+              <div hidden={!user}>
+                <Link to="/app"><h1 className="siteTitle">{ SITENAME }</h1></Link>
+              </div>
             </div>
 
             { _user_section }
