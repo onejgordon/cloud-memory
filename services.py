@@ -1,17 +1,12 @@
 from google.appengine.ext import db, deferred, blobstore
 from google.appengine.api import mail, images, urlfetch, memcache
-import os
-from datetime import datetime,timedelta
-import tools
+from datetime import datetime, timedelta
 import urllib
-import authorized
 import logging
 from models import Item
 from constants import *
-import handlers
 import json
 from apiclient import discovery
-import httplib2
 from oauth2client import client
 
 logger = logging.getLogger()
@@ -19,19 +14,22 @@ logger.setLevel(logging.DEBUG)
 
 
 class ServiceError(Exception):
+
     def __init__(self, message, errors=None):
         super(ServiceError, self).__init__(message)
 
 # Config functions
 
+
 def config_g_tasks(user, http_auth):
     service = discovery.build('tasks', 'v1', http=http_auth)
-    options =[]
+    options = []
     results = service.tasklists().list(
         maxResults=10).execute()
     logging.debug(results)
     if results:
-        options = [{"value": r.get('id'), "label": r.get('title')} for r in results.get('items', [])]
+        options = [{"value": r.get('id'), "label": r.get('title')}
+                   for r in results.get('items', [])]
     return {
         "input": "select",
         "multi": False,
@@ -45,7 +43,8 @@ def config_g_tasks(user, http_auth):
 
 class ServiceFetcher(object):
 
-    def __init__(self, user=None, date_dt=None, next_date_dt=None, http_auth=None, limit=30):
+    def __init__(self, user=None, date_dt=None,
+                 next_date_dt=None, http_auth=None, limit=30):
         self.user = user
         self.date_dt = date_dt
         self.next_date_dt = next_date_dt
@@ -61,6 +60,7 @@ class ServiceFetcher(object):
         '''Override'''
         pass
 
+
 class ServiceFetcher_g_calendar(ServiceFetcher):
 
     def __init__(self, **kwargs):
@@ -72,13 +72,22 @@ class ServiceFetcher_g_calendar(ServiceFetcher):
         timeMin = self.date_dt.isoformat() + 'Z'
         timeMax = self.next_date_dt.isoformat() + 'Z'
         results = self.service.events().list(calendarId='primary',
-            maxResults=self.limit,
-            timeMin=timeMin,
-            timeMax=timeMax).execute()
+                                             maxResults=self.limit,
+                                             timeMin=timeMin,
+                                             timeMax=timeMax).execute()
         if results:
-            items = [Item(svc=SERVICE.GCAL, title=r.get('summary'), details=r.get('description'), id=r.get('id'), type=SERVICE.EVENT).json() for r in results.get('items', [])]
+            items = [
+                Item(
+                    svc=SERVICE.GCAL,
+                    title=r.get('summary'),
+                    details=r.get('description'),
+                    id=r.get('id'),
+                    type=SERVICE.EVENT).json() for r in results.get(
+                    'items',
+                    [])]
             return items
         return []
+
 
 class ServiceFetcher_g_tasks(ServiceFetcher):
 
@@ -99,11 +108,19 @@ class ServiceFetcher_g_tasks(ServiceFetcher):
                 completedMax=timeMax).execute()
             if results:
                 logging.debug(results)
-                items = [Item(svc=SERVICE.GTASKS, title=r.get('title'), id=r.get('id'), type=SERVICE.TASK).json() for r in results.get('items', [])]
+                items = [
+                    Item(
+                        svc=SERVICE.GTASKS,
+                        title=r.get('title'),
+                        id=r.get('id'),
+                        type=SERVICE.TASK).json() for r in results.get(
+                        'items',
+                        [])]
                 return items
         else:
             raise ServiceError("No tasklist configured")
         return []
+
 
 class ServiceFetcher_g_mail(ServiceFetcher):
 
@@ -128,7 +145,13 @@ class ServiceFetcher_g_mail(ServiceFetcher):
                     if h.get('name') == 'Date':
                         _date = h.get('value')
                 if subject and _from:
-                    self.items.append(Item(svc=SERVICE.GMAIL, title=subject, subhead=_from, id=response.get('id'), type=SERVICE.EMAIL).json())
+                    self.items.append(
+                        Item(
+                            svc=SERVICE.GMAIL,
+                            title=subject,
+                            subhead=_from,
+                            id=response.get('id'),
+                            type=SERVICE.EMAIL).json())
 
     def fetch(self):
         BATCH_MESSAGES = True
@@ -139,20 +162,34 @@ class ServiceFetcher_g_mail(ServiceFetcher):
         logging.debug(query)
         if BATCH_MESSAGES:
             # Fetch message IDs
-            results = self.service.users().messages().list(userId='me', maxResults=self.limit, q=query).execute()
+            results = self.service.users().messages().list(
+                userId='me', maxResults=self.limit, q=query).execute()
             if results:
                 ids = [r.get('id') for r in results.get('messages', [])]
                 if ids:
-                    batch = self.service.new_batch_http_request(callback=self._handle_gmail_message)
+                    batch = self.service.new_batch_http_request(
+                        callback=self._handle_gmail_message)
                     for id in ids:
-                        batch.add(self.service.users().messages().get(id=id, userId="me"), request_id=id)
-                    batch.execute(http=self.http_auth) # Blocks, populates self.items
+                        batch.add(
+                            self.service.users().messages().get(
+                                id=id, userId="me"), request_id=id)
+                    # Blocks, populates self.items
+                    batch.execute(http=self.http_auth)
         else:
             # Only threads show snippets in Gmail API?
-            results = self.service.users().threads().list(userId='me', maxResults=limit, fields='threads', q=query).execute()
+            results = self.service.users().threads().list(
+                userId='me', maxResults=self.limit, fields='threads', q=query).execute()
             if results:
-                self.items = [Item(svc=SERVICE.GMAIL, title=r.get('snippet'), id=r.get('id'), type=SERVICE.EMAIL).json() for r in results.get('threads', [])]
+                self.items = [
+                    Item(
+                        svc=SERVICE.GMAIL,
+                        title=r.get('snippet'),
+                        id=r.get('id'),
+                        type=SERVICE.EMAIL).json() for r in results.get(
+                        'threads',
+                        [])]
         return self.items
+
 
 class ServiceFetcher_g_drive(ServiceFetcher):
 
@@ -163,7 +200,8 @@ class ServiceFetcher_g_drive(ServiceFetcher):
         self.build_service('drive', 'v3')
         timeMin = self.date_dt.isoformat()
         timeMax = self.next_date_dt.isoformat()
-        query = "(viewedByMeTime > '%s' and viewedByMeTime < '%s') OR (createdTime > '%s' and createdTime < '%s' and '%s' in owners)" % (timeMin, timeMax, timeMin, timeMax, self.user.email)
+        query = "(viewedByMeTime > '%s' and viewedByMeTime < '%s') OR (createdTime > '%s' and createdTime < '%s' and '%s' in owners)" % (
+            timeMin, timeMax, timeMin, timeMax, self.user.email)
         items = []
         results = self.service.files().list(
             orderBy='modifiedTime',
@@ -178,11 +216,11 @@ class ServiceFetcher_g_drive(ServiceFetcher):
             webViewLink = f.get('webViewLink')
             thumbnailLink = f.get('thumbnailLink')
             item = Item(svc=SERVICE.GDRIVE,
-                title=f.get('name'),
-                id=f.get('id'),
-                image=thumbnailLink,
-                details=f.get('description'),
-                type=type)
+                        title=f.get('name'),
+                        id=f.get('id'),
+                        image=thumbnailLink,
+                        details=f.get('description'),
+                        type=type)
             if is_image:
                 logging.debug(f)
             items.append(item.json())
@@ -196,13 +234,12 @@ class ServiceFetcher_nyt_news(ServiceFetcher):
 
     def fetch(self):
         from secrets import NYT_API_KEY
-        SECTION = "World" # "U.S."
-        params = urllib.urlencode( {
+        params = urllib.urlencode({
             'api-key': NYT_API_KEY,
-            'fq': "news_desk:\"%s\"" % SECTION,
+            'fq': "section_name:(\"World\" \"U.S.\")",
             'begin_date': datetime.strftime(self.date_dt, "%Y%m%d"),
             'end_date': datetime.strftime(self.next_date_dt, "%Y%m%d")
-        } )
+        })
         url = "https://api.nytimes.com/svc/search/v2/articlesearch.json?" + params
         logging.debug(url)
         response = urlfetch.fetch(url, method=urlfetch.GET)
@@ -220,8 +257,15 @@ class ServiceFetcher_nyt_news(ServiceFetcher):
                     w = mm.get('width')
                     if w > MIN_WIDTH:
                         image = IMAGE_BASE + mm.get('url')
-                item = Item(svc=SERVICE.NYT_NEWS, title=news.get('headline', {}).get('main'), image=image, details=news.get('snippet'), link=news.get('web_url'), id=news.get('_id'), type=SERVICE.NEWS)
+                item = Item(
+                    svc=SERVICE.NYT_NEWS,
+                    title=news.get(
+                        'headline',
+                        {}).get('main'),
+                    image=image,
+                    details=news.get('snippet'),
+                    link=news.get('web_url'),
+                    id=news.get('_id'),
+                    type=SERVICE.NEWS)
                 items.append(item.json())
         return items
-
-
