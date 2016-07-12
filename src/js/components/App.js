@@ -111,7 +111,7 @@ export default class App extends React.Component {
           <header className="topBar row">
             <div className="siteHeader col-sm-3">
               <div hidden={!user}>
-                <Link to="/app"><h1 className="siteTitle">{ SITENAME }</h1></Link>
+                <Link to="/app/main"><h1 className="siteTitle">{ SITENAME }</h1></Link>
               </div>
             </div>
 

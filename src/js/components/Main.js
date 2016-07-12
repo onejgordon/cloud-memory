@@ -44,7 +44,7 @@ export default class Main extends React.Component {
         this.state = {
           form: {
             date: new Date(),
-            limit: 10
+            limit: 30
           },
           loading: false
         };

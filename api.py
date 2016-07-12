@@ -268,7 +268,6 @@ class FetchAPI(handlers.BaseRequestHandler):
         date = self.request.get('date')
         limit = self.request.get_range('limit', max_value=100)
 
-        issue = None
         results = memcache.get_multi(mckeys)
         fetch_keys = []
         for mckey in mckeys:
@@ -286,6 +285,7 @@ class FetchAPI(handlers.BaseRequestHandler):
         self.json_out(results, success=success, message=message)
 
         # TODO: Timezone
+
 
 class ServiceConfigureAPI(handlers.BaseRequestHandler):
     @authorized.role('api')

@@ -24,7 +24,7 @@ module.exports = (
   <Route component={Site} path="/">
     <IndexRedirect to="/app" />
     <Route path="app" component={App}>
-      <IndexRedirect to="/app/main" />
+      <IndexRedirect to="/app/public" />
       <Route path="public" component={Public} />
       <Route path="main" component={Main} />
       <Route path="about" component={About} />
