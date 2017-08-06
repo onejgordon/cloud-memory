@@ -857,8 +857,8 @@ var util = {
     },
 
     set_title(title) {
-        if (title != null) title = title + " | Megaphone";
-        else title = "Megaphone";
+        if (title != null) title = title + " | Cloudy Memory";
+        else title = "Cloudy Memory";
         document.title = title;
     }
 

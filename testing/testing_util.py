@@ -1,19 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
-import unittest
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import testbed
 from datetime import datetime, timedelta
 import tools
 import json
-import math
 from google.appengine.ext import deferred
 from base_test_case import BaseTestCase
-import logging
-import os
-from megaphone import app as tst_app
+from cloudmemory import app as tst_app
 
 class UtilTestCase(BaseTestCase):
 
